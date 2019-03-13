@@ -1,27 +1,41 @@
 import React, { Component } from 'react'
-import {Text, View, FlatList, Dimensions, Image, TouchableOpacity } from 'react-native';
+import {Text, 
+        View, 
+        FlatList, 
+        Dimensions, 
+        Image, 
+        TouchableOpacity, 
+        ActivityIndicator } from 'react-native';
 import axios from 'axios'
 
 const numColumns = 2;
 class List extends Component {
     state = {
-        product: []
+        product: [],
+        loading: true
       }
     
       componentDidMount(){
         axios.get('https://product-catalog-api.herokuapp.com/products/').then(
           res => (this.setState({
-                    product: res.data.result
+                    product: res.data.result,
+                    loading: false
             })
           )
         )
       }
 
+
+      _keyExtractor = (item, index) => item.id;
+
     renderItem = ({ item }) => {
+        const {loading } = this.state
         const {productName, productPrice, productImage} = item
-        const {items, itemInvisible, contain, itemText} = styles
-        if (item.empty === true) {
-          return <View style={[items, itemInvisible]} />;
+        const {items, contain, itemText} = styles
+        console.log(productImage)
+        if (loading) {
+          console.log("GG")
+          return <ActivityIndicator size="large" color="#0000ff" />;
         }
         const {navigate} = this.props.navigation;
         return (
@@ -46,15 +60,30 @@ class List extends Component {
         );
       };
 
-      render() {
-          const {product} = this.state 
+      
+
+      renderList(){
+        const {loading, product } = this.state
+        if (loading) {
+          //console.log("GG")
+          return <ActivityIndicator style={{marginTop: 20}} size="large" color="#0000ff" />;
+        }
         return (
           <FlatList
             data={product}
             renderItem={this.renderItem}
             numColumns={numColumns}
-            keyExtractor={product.productName}
+            keyExtractor={this._keyExtractor}
           />
+        )
+      }
+
+      render() { 
+        return (
+          <View>          
+            {this.renderList()}
+            </View>
+
         );
     }
 }
